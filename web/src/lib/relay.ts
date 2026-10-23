@@ -80,13 +80,27 @@ type RawLaunch = {
 const names = new Map<number, { name: string; symbol: string; meta: Meta; block: bigint }>();
 const createdAt = new Map<number, number>();
 
+// Robinhood Chain's RPC refuses log queries over 10M blocks (about 12 days of
+// chain), so anything reaching back to the deploy block goes in spans under that.
+const SPAN = 9_000_000n;
+function spans(from: bigint, to: bigint): [bigint, bigint][] {
+  const out: [bigint, bigint][] = [];
+  for (let a = from; a <= to; a += SPAN) out.push([a, a + SPAN - 1n < to ? a + SPAN - 1n : to]);
+  return out;
+}
+
+// LaunchCreated logs are read once and then only from where the last read stopped.
+let namesScannedTo = FROM_BLOCK - 1n;
 async function loadNames(ids: number[]) {
-  const missing = ids.filter((i) => !names.has(i));
-  if (!missing.length) return;
-  const logs = await publicClient.getLogs({ address: RELAY_ADDRESS, event: created, fromBlock: FROM_BLOCK, toBlock: "latest" });
-  for (const l of logs) {
-    const a = l.args;
-    names.set(Number(a.id), { name: a.name ?? "", symbol: a.symbol ?? "", meta: parseMeta(a.meta ?? ""), block: l.blockNumber });
+  if (!ids.some((i) => !names.has(i))) return;
+  const head = await publicClient.getBlockNumber();
+  for (const [fromBlock, toBlock] of spans(namesScannedTo + 1n, head)) {
+    const logs = await publicClient.getLogs({ address: RELAY_ADDRESS, event: created, fromBlock, toBlock });
+    for (const l of logs) {
+      const a = l.args;
+      names.set(Number(a.id), { name: a.name ?? "", symbol: a.symbol ?? "", meta: parseMeta(a.meta ?? ""), block: l.blockNumber });
+    }
+    namesScannedTo = toBlock;
   }
 }
 
@@ -159,12 +173,22 @@ export type Activity =
 
 /** Everything that happened in one launch, oldest first. */
 export async function fetchActivity(id: number): Promise<Activity[]> {
-  const base = { address: RELAY_ADDRESS, abi: relayAbi, fromBlock: FROM_BLOCK, toBlock: "latest" as const, args: { id: BigInt(id) } };
-  const [sealed, revealed, swaps] = await Promise.all([
-    publicClient.getContractEvents({ ...base, eventName: "Sealed" }),
-    publicClient.getContractEvents({ ...base, eventName: "Revealed" }),
-    publicClient.getContractEvents({ ...base, eventName: "Swap" }),
-  ]);
+  await loadNames([id]);
+  const start = names.get(id)?.block ?? FROM_BLOCK;
+  const head = await publicClient.getBlockNumber();
+  const parts = await Promise.all(
+    spans(start, head).map(([fromBlock, toBlock]) => {
+      const base = { address: RELAY_ADDRESS, abi: relayAbi, fromBlock, toBlock, args: { id: BigInt(id) } };
+      return Promise.all([
+        publicClient.getContractEvents({ ...base, eventName: "Sealed" }),
+        publicClient.getContractEvents({ ...base, eventName: "Revealed" }),
+        publicClient.getContractEvents({ ...base, eventName: "Swap" }),
+      ]);
+    }),
+  );
+  const sealed = parts.flatMap((p) => p[0]);
+  const revealed = parts.flatMap((p) => p[1]);
+  const swaps = parts.flatMap((p) => p[2]);
   const out: Activity[] = [
     ...sealed.map((e) => ({ kind: "sealed" as const, who: e.args.bidder!, eth: e.args.deposit!, block: e.blockNumber, tx: e.transactionHash })),
     ...revealed.map((e) => ({ kind: "revealed" as const, who: e.args.bidder!, eth: e.args.amount!, cover: e.args.cover!, block: e.blockNumber, tx: e.transactionHash })),
