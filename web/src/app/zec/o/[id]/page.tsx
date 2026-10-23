@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import QRCode from "qrcode";
-import { explorer } from "@/lib/chain";
+import { explorer, ZEC_ON } from "@/lib/chain";
 import { tokens } from "@/lib/format";
 import { cfg } from "@/server/config";
 import { getMeta, type ZecOrder } from "@/server/db";
@@ -84,6 +84,7 @@ function TxLink({ hash, label }: { hash: string | null; label: string }) {
 }
 
 export default async function ZecOrderPage({ params }: { params: Promise<{ id: string }> }) {
+  if (!ZEC_ON) notFound();
   const { id } = await params;
   const o = await findOrder(id);
   if (!o) notFound();

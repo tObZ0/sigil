@@ -19,6 +19,8 @@ export const IS_LOCAL = process.env.NEXT_PUBLIC_RELAY_NETWORK === "local";
 export const chain = IS_LOCAL ? localChain : robinhood;
 export const RELAY_ADDRESS = (process.env.NEXT_PUBLIC_RELAY_ADDRESS ?? "") as Address;
 export const FROM_BLOCK = BigInt(process.env.NEXT_PUBLIC_RELAY_FROM_BLOCK || "0");
+// ZEC bids and the onion need the relayer server; sites without one (Vercel) hide them.
+export const ZEC_ON = process.env.NEXT_PUBLIC_ZEC === "on";
 export const DEPLOYED = /^0x[0-9a-fA-F]{40}$/.test(RELAY_ADDRESS);
 
 export const publicClient = createPublicClient({ chain, transport: http() });

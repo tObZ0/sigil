@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ZEC_ON } from "@/lib/chain";
 import { eth } from "@/lib/format";
 import { launchCreatedAt, poolPrice, salePrice, type Launch } from "@/lib/relay";
 import { Coin, Price, SEAL_STATE } from "./bits";
@@ -156,7 +157,7 @@ export function HeroVisual({ launches, now }: { launches: Launch[] | null; now: 
           <Link href={`/l/${l.id}`} className="btn">
             {sealing ? "Seal a bid" : revealing ? "Watch the reveal" : "Trade"}
           </Link>
-          {sealing ? (
+          {sealing && ZEC_ON ? (
             <Link href={`/zec?launch=${l.id}`} className="btn ghost">
               Bid with ZEC
             </Link>

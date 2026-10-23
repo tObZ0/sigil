@@ -6,6 +6,8 @@ import { countdown } from "@/lib/format";
 import { cfg, zecEnabled } from "@/server/config";
 import { formatEth } from "@/server/money";
 import type { FormErrors, OrderForm } from "@/server/orders";
+import { notFound } from "next/navigation";
+import { ZEC_ON } from "@/lib/chain";
 import { createZecOrder } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -15,14 +17,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ZecPage({ searchParams }: { searchParams: Promise<{ launch?: string }> }) {
-  if (!zecEnabled()) {
-    return (
-      <section className="page-head">
-        <h1>Bid with shielded ZEC</h1>
-        <p className="lede">ZEC bidding isn&rsquo;t switched on for this deployment.</p>
-      </section>
-    );
-  }
+  if (!ZEC_ON || !zecEnabled()) notFound();
   const { launch: chosen } = await searchParams;
   const flash = (await cookies()).get("zec_form")?.value;
   let f: OrderForm = { launchId: chosen ?? "", bid: "", dest: "", refund: "" };

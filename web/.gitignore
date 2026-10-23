@@ -50,3 +50,5 @@ next-env.d.ts
 
 # worker bundle
 /dist
+
+.env*

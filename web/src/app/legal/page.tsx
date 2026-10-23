@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ZEC_ON } from "@/lib/chain";
 
 export const metadata: Metadata = {
   title: "Terms, privacy and risks",
@@ -41,11 +42,13 @@ export default function LegalPage() {
             Fees are set in the contract and shown on <Link href="/how#rules">How it works</Link> before you sign anything.
           </li>
         </ul>
-        <p>
-          <b>ZEC bids</b> are different: when you pay in ZEC, Sigil holds your funds and places the bid for you until the
-          launch settles. If something goes wrong that the system can&rsquo;t settle on its own, the order is stopped for a
-          person to look at, and any ZEC refund is sent by hand.
-        </p>
+        {ZEC_ON ? (
+          <p>
+            <b>ZEC bids</b> are different: when you pay in ZEC, Sigil holds your funds and places the bid for you until
+            the launch settles. If something goes wrong that the system can&rsquo;t settle on its own, the order is stopped
+            for a person to look at, and any ZEC refund is sent by hand.
+          </p>
+        ) : null}
 
         <h2 id="privacy">Privacy</h2>
         <ul>
@@ -55,12 +58,18 @@ export default function LegalPage() {
             your device unless you download them.
           </li>
           <li>Blockchain data is public by nature. Anything you do on-chain can be seen by anyone, forever.</li>
-          <li>
-            For a ZEC bid, Sigil stores the order: the launch, the bid, the amounts and the address the tokens go to. A few
-            days after the order closes, the destination address and bid secret are deleted; the rest stays as an
-            accounting record.
-          </li>
-          <li>Pages may set one short-lived cookie to show a form error after a page reload. It holds nothing else.</li>
+          {ZEC_ON ? (
+            <>
+              <li>
+                For a ZEC bid, Sigil stores the order: the launch, the bid, the amounts and the address the tokens go to.
+                A few days after the order closes, the destination address and bid secret are deleted; the rest stays as an
+                accounting record.
+              </li>
+              <li>The ZEC form may set one short-lived cookie to show an error after a page reload. It holds nothing else.</li>
+            </>
+          ) : (
+            <li>No cookies at all.</li>
+          )}
         </ul>
 
         <h2 id="risks">Risks</h2>
@@ -80,10 +89,12 @@ export default function LegalPage() {
             <b>Privacy has limits.</b> The wallet that seals a bid and the size of its deposit are public. Read{" "}
             <Link href="/how">what a seal doesn&rsquo;t hide</Link>.
           </li>
-          <li>
-            <b>ZEC bids are custodial.</b> Between payment and delivery your funds are held by Sigil, and exchange rates
-            can move against you.
-          </li>
+          {ZEC_ON ? (
+            <li>
+              <b>ZEC bids are custodial.</b> Between payment and delivery your funds are held by Sigil, and exchange rates
+              can move against you.
+            </li>
+          ) : null}
         </ul>
         <p>Nothing on this site is financial, investment, legal or tax advice.</p>
       </div>

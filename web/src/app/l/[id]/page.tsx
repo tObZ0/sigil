@@ -9,7 +9,7 @@ import { PriceChart } from "@/components/price-chart";
 import { SealMoment, type MomentKind } from "@/components/seal-moment";
 import { WaxSeal } from "@/components/wax-seal";
 import { erc20Abi, relayAbi } from "@/lib/abi";
-import { chain, explorer, publicClient, RELAY_ADDRESS } from "@/lib/chain";
+import { chain, explorer, publicClient, RELAY_ADDRESS, ZEC_ON } from "@/lib/chain";
 import { countdown, eth, short, tokens } from "@/lib/format";
 import { useChainClock, usePoll } from "@/lib/hooks";
 import { fetchActivity, fetchBid, fetchLaunch, poolPrice, salePrice, SALE_SUPPLY, type Activity, type Bid, type Launch } from "@/lib/relay";
@@ -125,7 +125,7 @@ export default function LaunchPage() {
 
         <aside className="panel">
           <ActionPanel l={l} bid={bid} ended={ended} reload={reload} onMoment={setMoment} />
-          {l.phase === "sealing" && !ended ? (
+          {ZEC_ON && l.phase === "sealing" && !ended ? (
             <div className="card zec-cta">
               <span className="hint" style={{ margin: 0 }}>
                 No wallet? Bid with shielded ZEC. Sigil seals it for you.

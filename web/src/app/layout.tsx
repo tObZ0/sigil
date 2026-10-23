@@ -4,7 +4,7 @@ import { Header } from "@/components/header";
 import { LogoMark } from "@/components/logo";
 import { NetStatus } from "@/components/net-status";
 import { Tape } from "@/components/tape";
-import { IS_LOCAL, RELAY_ADDRESS } from "@/lib/chain";
+import { IS_LOCAL, RELAY_ADDRESS, ZEC_ON } from "@/lib/chain";
 import { WalletProvider } from "@/lib/wallet";
 import "./globals.css";
 
@@ -63,7 +63,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                   <Link href="/">Launches</Link>
                   <Link href="/launch">Launch a token</Link>
                   <Link href="/bids">My bids</Link>
-                  <Link href="/zec">Bid with ZEC</Link>
+                  {ZEC_ON ? <Link href="/zec">Bid with ZEC</Link> : null}
                 </nav>
                 <nav aria-label="Resources">
                   <h4>Resources</h4>

@@ -8,7 +8,7 @@ import { LOGO_EMBLEM, LOGO_SEED } from "@/components/logo";
 import { Story } from "@/components/story";
 import { ZecFeature } from "@/components/zec-feature";
 import { WaxSeal } from "@/components/wax-seal";
-import { DEPLOYED } from "@/lib/chain";
+import { DEPLOYED, ZEC_ON } from "@/lib/chain";
 import { eth } from "@/lib/format";
 import { useChainClock, usePoll } from "@/lib/hooks";
 import { fetchLaunches, type Phase } from "@/lib/relay";
@@ -39,11 +39,13 @@ export default function Home() {
     <>
       <section className="hero">
         <div className="hero-copy">
-          <Link href="/zec" className="hero-badge">
-            <span className="hero-badge-new">New</span>
-            Bid with shielded ZEC, no wallet needed
-            <span aria-hidden>→</span>
-          </Link>
+          {ZEC_ON ? (
+            <Link href="/zec" className="hero-badge">
+              <span className="hero-badge-new">New</span>
+              Bid with shielded ZEC, no wallet needed
+              <span aria-hidden>→</span>
+            </Link>
+          ) : null}
           <h1>
             Bids go in sealed.
             <br />
@@ -84,7 +86,7 @@ export default function Home() {
         </div>
       </dl>
 
-      <ZecFeature />
+      {ZEC_ON ? <ZecFeature /> : null}
 
       <section className="section" id="launches">
         <div className="section-head">

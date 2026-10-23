@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { ZEC_ON } from "@/lib/chain";
 import { short } from "@/lib/format";
 import { LogoMark } from "./logo";
 import { useWallet } from "@/lib/wallet";
@@ -11,7 +12,7 @@ const LINKS = [
   { href: "/", label: "Launches" },
   { href: "/launch", label: "Launch a token" },
   { href: "/bids", label: "My bids" },
-  { href: "/zec", label: "Bid with ZEC" },
+  ...(ZEC_ON ? [{ href: "/zec", label: "Bid with ZEC" }] : []),
   { href: "/how", label: "How it works" },
 ];
 
