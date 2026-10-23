@@ -1,0 +1,15 @@
+DataDirectory /tmp/tor/data
+Log notice stdout
+
+# No SOCKS port: nothing in this container dials out through tor.
+SocksPort 0
+
+HiddenServiceDir /tmp/tor/relay
+HiddenServiceVersion 3
+HiddenServicePort 80 127.0.0.1:__PORT__
+
+# Under a flood, clients solve a small puzzle before they get a circuit.
+HiddenServicePoWDefensesEnabled 1
+# Cap concurrent streams per circuit so one client can't hog the site.
+HiddenServiceMaxStreams 40
+HiddenServiceMaxStreamsCloseCircuit 1

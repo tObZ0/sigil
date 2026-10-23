@@ -1,0 +1,25 @@
+// Subset of lightwalletd's service.proto: only the two calls the scanner makes.
+// We never ask for a specific transaction, so the server only ever sees
+// "someone is reading every block", never which payments are ours.
+
+syntax = "proto3";
+package cash.z.wallet.sdk.rpc;
+
+import "compact_formats.proto";
+
+message BlockID {
+  uint64 height = 1;
+  bytes hash = 2;
+}
+
+message BlockRange {
+  BlockID start = 1;
+  BlockID end = 2;
+}
+
+message ChainSpec {}
+
+service CompactTxStreamer {
+  rpc GetLatestBlock(ChainSpec) returns (BlockID) {}
+  rpc GetBlockRange(BlockRange) returns (stream CompactBlock) {}
+}

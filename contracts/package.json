@@ -1,0 +1,20 @@
+{
+  "name": "sigil-contracts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sigil sealed-launch launchpad (Hardhat).",
+  "scripts": {
+    "build": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:local": "hardhat run scripts/deploy.ts --network localhost",
+    "deploy:testnet": "hardhat run scripts/deploy.ts --network robinhoodTestnet",
+    "deploy:mainnet": "hardhat run scripts/deploy.ts --network robinhoodMainnet"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "^5.1.0",
+    "dotenv": "^16.4.5",
+    "hardhat": "^2.22.17",
+    "typescript": "^5.9.3"
+  }
+}
