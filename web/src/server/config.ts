@@ -62,7 +62,9 @@ function load() {
     relayer: {
       /** Sigil's float on Robinhood Chain: funds every ZEC bid. */
       get hotKey(): Hex {
-        return str("HOT_WALLET_KEY") as Hex;
+        // Wallets export keys with or without the 0x; viem needs it.
+        const k = str("HOT_WALLET_KEY");
+        return (k.startsWith("0x") ? k : `0x${k}`) as Hex;
       },
       /** Seed for the per-order bidding wallets. Losing it strands tokens mid-launch. */
       get orderSeed(): Hex {
