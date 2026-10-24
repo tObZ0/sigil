@@ -1,0 +1,22 @@
+# The ZEC + Tor half of Sigil, for a small always-on server (e.g. Oracle Cloud
+# Always Free). The public site stays on Vercel; both share one Postgres (Neon).
+#
+#   docker compose -f deploy/compose.server.yml --env-file .env.server up -d --build
+#
+# Nothing listens on a public port: the site inside is reachable only as the
+# onion service, and the worker talks out to Neon, Zcash and Robinhood Chain.
+services:
+  sigil:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_ONION_ADDRESS: ${NEXT_PUBLIC_ONION_ADDRESS}
+    env_file: ../.env.server
+    environment:
+      # Onion only. The clearnet site is the Vercel one.
+      HOSTNAME: 127.0.0.1
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }

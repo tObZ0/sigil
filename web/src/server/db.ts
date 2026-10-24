@@ -9,6 +9,8 @@ const g = globalThis as unknown as { __relaySql?: Sql };
 export function db(): Sql {
   return (g.__relaySql ??= postgres(cfg().databaseUrl, {
     max: 5,
+    // Neon's pooled URL (what Vercel should use) can't keep prepared statements.
+    prepare: false,
     types: { bigint: postgres.BigInt },
     onnotice: () => {},
   }));
@@ -73,6 +75,13 @@ create table if not exists payments (
   primary key (txid, action)
 );
 create index if not exists payments_slot on payments (slot);
+
+-- Deposit addresses the worker derives ahead of time, so order pages on a
+-- host without relay-scanner or the viewing key (Vercel) can still hand one out.
+create table if not exists zec_address_pool (
+  slot    bigint primary key,
+  address text not null
+);
 
 create table if not exists meta (
   key   text primary key,

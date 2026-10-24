@@ -7,7 +7,7 @@
 import { advance } from "./bidder";
 import { cfg } from "./config";
 import { ACTIVE, db, migrate, setMeta, type ZecOrder } from "./db";
-import { prune, reconcile } from "./orders";
+import { fillAddressPool, prune, reconcile } from "./orders";
 import { createWatcher } from "./zcash";
 
 const TICK_MS = 5_000;
@@ -28,6 +28,8 @@ async function main() {
       const tip = watcher.tip();
       // The order pages read the tip from here for their confirmation count.
       if (tip !== null) await setMeta("zcash_tip", tip);
+      // Order pages elsewhere (Vercel) can't derive addresses; keep some ready.
+      await fillAddressPool();
       await reconcile(tip);
       const orders = await db()<ZecOrder[]>`
         select * from zec_orders where status in ${db()(ACTIVE)} order by created_at`;

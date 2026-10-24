@@ -71,8 +71,12 @@ export async function openOrder(f: OrderForm): Promise<{ ok: true; id: string } 
   if (q.zat > o.maxZat) return { ok: false, errors: { bid: `That's more than ${formatZec(o.maxZat)} ZEC. Bid less.` } };
 
   const sql = db();
-  const [{ slot }] = await sql<{ slot: bigint }[]>`select nextval('zec_slot') as slot`;
-  const address = await depositAddress(slot);
+  const deposit = await takeDepositAddress().catch((e) => {
+    console.error("no deposit address:", e);
+    return null;
+  });
+  if (!deposit) return { ok: false, errors: { form: "ZEC bidding is busy right now. Try again in a minute." } };
+  const { slot, address } = deposit;
   const id = orderId();
   await sql`
     insert into zec_orders (id, slot, deposit_address, status, expires_at, launch_id, symbol, dest_address,
@@ -80,6 +84,34 @@ export async function openOrder(f: OrderForm): Promise<{ ok: true; id: string } 
     values (${id}, ${slot}, ${address}, 'awaiting', ${expiresAt}, ${launchId}, ${launch!.symbol}, ${getAddress(dest)},
             ${refund || null}, ${bid.toString()}, ${q.zat}, ${rate.zecUsd}, ${rate.ethUsd})`;
   return { ok: true, id };
+}
+
+/**
+ * A fresh slot and its shielded address: one the worker made ahead of time if
+ * any are left, otherwise derived here (only works where relay-scanner runs).
+ */
+async function takeDepositAddress(): Promise<{ slot: bigint; address: string }> {
+  const sql = db();
+  const [pooled] = await sql<{ slot: bigint; address: string }[]>`
+    delete from zec_address_pool
+    where slot = (select slot from zec_address_pool order by slot limit 1 for update skip locked)
+    returning slot, address`;
+  if (pooled) return pooled;
+  const [{ slot }] = await sql<{ slot: bigint }[]>`select nextval('zec_slot') as slot`;
+  return { slot, address: await depositAddress(slot) };
+}
+
+/** Worker: keeps `target` unused deposit addresses ready for the order pages. */
+export async function fillAddressPool(target = 50): Promise<number> {
+  const sql = db();
+  const [{ n }] = await sql<{ n: bigint }[]>`select count(*)::bigint as n from zec_address_pool`;
+  let added = 0;
+  for (let have = Number(n); have < target; have++, added++) {
+    const [{ slot }] = await sql<{ slot: bigint }[]>`select nextval('zec_slot') as slot`;
+    const address = await depositAddress(slot);
+    await sql`insert into zec_address_pool (slot, address) values (${slot}, ${address})`;
+  }
+  return added;
 }
 
 export async function findOrder(id: string): Promise<ZecOrder | null> {

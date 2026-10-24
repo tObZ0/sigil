@@ -49,7 +49,11 @@ function load() {
     zcash: {
       mode,
       network: str("ZCASH_NETWORK", "main") as "main" | "test",
-      ufvk: mode === "live" ? str("RELAY_UFVK") : "",
+      // Secrets are getters: the Vercel site reads the rest of these settings
+      // but never has the keys, and only the worker's code paths touch them.
+      get ufvk(): string {
+        return mode === "live" ? str("RELAY_UFVK") : "";
+      },
       /** Height to start scanning from on a fresh database. */
       birthday: int("SCAN_BIRTHDAY", 0),
       scannerBin: str("SCANNER_BIN", "relay-scanner"),
@@ -57,9 +61,13 @@ function load() {
     },
     relayer: {
       /** Sigil's float on Robinhood Chain: funds every ZEC bid. */
-      hotKey: str("HOT_WALLET_KEY") as Hex,
+      get hotKey(): Hex {
+        return str("HOT_WALLET_KEY") as Hex;
+      },
       /** Seed for the per-order bidding wallets. Losing it strands tokens mid-launch. */
-      orderSeed: str("ORDER_KEY_SEED") as Hex,
+      get orderSeed(): Hex {
+        return str("ORDER_KEY_SEED") as Hex;
+      },
       /** ETH the hot wallet always keeps for its own gas. */
       reserve: eth("HOT_WALLET_RESERVE_ETH", "0.002"),
       /** Gas money each bidding wallet gets for seal, reveal, claim and delivery. */
