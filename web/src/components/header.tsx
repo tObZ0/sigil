@@ -16,8 +16,15 @@ const LINKS = [
   { href: "/how", label: "How it works" },
 ];
 
+const X_URL = process.env.NEXT_PUBLIC_X_URL;
+
 export function Header() {
   const path = usePathname();
+  // Phones get a menu button instead of the inline links. It closes whenever
+  // the page changes, so a tapped link never leaves it hanging open.
+  const [menu, setMenu] = useState<string | null>(null);
+  const open = menu === path;
+  const current = (href: string) => (href === "/" ? path === "/" : path.startsWith(href)) ? "page" : undefined;
   return (
     <header className="top">
       <div className="shell top-row">
@@ -27,13 +34,50 @@ export function Header() {
         </Link>
         <nav className="nav" aria-label="Sections">
           {LINKS.map((l) => (
-            <Link key={l.href} href={l.href} aria-current={(l.href === "/" ? path === "/" : path.startsWith(l.href)) ? "page" : undefined}>
+            <Link key={l.href} href={l.href} aria-current={current(l.href)}>
               {l.label}
             </Link>
           ))}
         </nav>
-        <WalletButton />
+        <div className="top-end">
+          {X_URL ? (
+            <a href={X_URL} target="_blank" rel="noreferrer" className="x-link" aria-label="Sigil on X">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden>
+                <path d="M17.75 3h3.07l-6.7 7.66L22 21h-6.17l-4.83-6.32L5.47 21H2.4l7.17-8.2L2 3h6.33l4.37 5.77L17.75 3Zm-1.08 16.17h1.7L7.4 4.74H5.58l11.09 14.43Z" />
+              </svg>
+            </a>
+          ) : null}
+          <WalletButton />
+          <button
+            type="button"
+            className="menu-btn"
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+            aria-controls="mobile-menu"
+            onClick={() => setMenu(open ? null : path)}
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+              {open ? <path d="M6 6l12 12M18 6 6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+            </svg>
+          </button>
+        </div>
       </div>
+      {open ? (
+        <nav id="mobile-menu" className="mobile-menu" aria-label="Sections">
+          <div className="shell">
+            {LINKS.map((l) => (
+              <Link key={l.href} href={l.href} aria-current={current(l.href)} onClick={() => setMenu(null)}>
+                {l.label}
+              </Link>
+            ))}
+            {X_URL ? (
+              <a href={X_URL} target="_blank" rel="noreferrer" className="mobile-menu-x">
+                Follow on X
+              </a>
+            ) : null}
+          </div>
+        </nav>
+      ) : null}
     </header>
   );
 }
