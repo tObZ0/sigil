@@ -5,8 +5,10 @@
 set -euo pipefail
 
 PORT="${PORT:-3000}"
-# 0.0.0.0 serves the public URL too; set HOSTNAME=127.0.0.1 for onion-only.
-HOSTNAME="${HOSTNAME:-0.0.0.0}"
+# Onion-only by default: the public site is on Vercel. BIND_ADDRESS=0.0.0.0
+# serves the host's public URL too. (Not HOSTNAME: Docker and Fly set that to
+# the machine's own name.)
+BIND="${BIND_ADDRESS:-127.0.0.1}"
 HS=/tmp/tor/relay
 mkdir -p /tmp/tor/data "$HS"
 chmod 700 /tmp/tor /tmp/tor/data "$HS"
@@ -24,7 +26,7 @@ unset ONION_SECRET_KEY
 PIDS=()
 tor -f /tmp/tor/torrc &
 PIDS+=($!)
-node node_modules/next/dist/bin/next start -p "$PORT" -H "$HOSTNAME" &
+node node_modules/next/dist/bin/next start -p "$PORT" -H "$BIND" &
 PIDS+=($!)
 if [[ -n "${DATABASE_URL:-}" ]]; then
   node dist/worker.mjs &

@@ -13,9 +13,6 @@ services:
       args:
         NEXT_PUBLIC_ONION_ADDRESS: ${NEXT_PUBLIC_ONION_ADDRESS}
     env_file: ../.env.server
-    environment:
-      # Onion only. The clearnet site is the Vercel one.
-      HOSTNAME: 127.0.0.1
     restart: unless-stopped
     logging:
       driver: json-file

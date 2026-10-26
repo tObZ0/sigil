@@ -1,0 +1,21 @@
+# Sigil's ZEC + Tor robot on Fly.io: the scanner, the worker and the onion
+# service in one always-on machine. The public site is on Vercel, so there's
+# no [http_service] here: no public port, and nothing for Fly to stop when idle.
+#
+# Secrets (keys, database) are set with `fly secrets import`, never in this file.
+
+app = "sigil-zec"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+  [build.args]
+    NEXT_PUBLIC_ONION_ADDRESS = "sigillwspsxyq5oufblbnmciirf4tsjhtdohh63rntrfshfliird7xqd.onion"
+
+[[restart]]
+  policy = "always"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "1gb"

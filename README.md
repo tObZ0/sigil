@@ -103,7 +103,7 @@ npm test                                # quote math + commitment tests
    `NEXT_PUBLIC_ONION_ADDRESS`. Runtime variables: `DATABASE_URL`,
    `RELAY_UFVK`, `SCAN_BIRTHDAY`, `HOT_WALLET_KEY`, `ORDER_KEY_SEED`,
    `ONION_SECRET_KEY`. The rest have defaults (see `web/.env.example`).
-3. Public networking on serves the normal site too; set `HOSTNAME=127.0.0.1`
-   to make it onion-only. The log prints `entrypoint: onion at <address>`.
+3. The container is onion-only by default (the public site is on Vercel);
+   set `BIND_ADDRESS=0.0.0.0` to serve the host's public URL too. The log prints `entrypoint: onion at <address>`.
 
 The contract hasn't been audited. Start with small launches.

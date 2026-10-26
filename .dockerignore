@@ -5,3 +5,7 @@ web/.env*
 contracts
 scanner/target
 .git
+.env*
+**/.env*
+launch-kit
+web/.vercel
