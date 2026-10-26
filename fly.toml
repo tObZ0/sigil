@@ -13,6 +13,11 @@ primary_region = "iad"
   [build.args]
     NEXT_PUBLIC_ONION_ADDRESS = "sigillwspsxyq5oufblbnmciirf4tsjhtdohh63rntrfshfliird7xqd.onion"
 
+[env]
+  # Fly's init is PID 1, so tini has to register as a subreaper to clean up
+  # exited child processes (the scanner restarts, tor helpers).
+  TINI_SUBREAPER = "1"
+
 [[restart]]
   policy = "always"
 
